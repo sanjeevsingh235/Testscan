@@ -5,10 +5,6 @@ pipeline {
         maven 'Maven'
     }
 
-    environment {
-        SCANNER_HOME = tool 'SonarQubeScanner'
-    }
-
     stages {
 
         stage('Checkout') {
@@ -26,12 +22,16 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh '''
-                    mvn sonar:sonar \
-                    -Dsonar.projectKey=testnewsonar \
-                    -Dsonar.host.url=http://localhost:9000 \
-                    -Dsonar.login=YOUR_TOKEN
-                    '''
+
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+
+                        sh '''
+                        mvn sonar:sonar \
+                        -Dsonar.projectKey=testnewsonar \
+                        -Dsonar.host.url=http://localhost:9000 \
+                        -Dsonar.login=$SONAR_TOKEN
+                        '''
+                    }
                 }
             }
         }
